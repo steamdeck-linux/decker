@@ -6,12 +6,19 @@
 
 PKGLIST=~/.local/share/decker/packages.csv
 GITPATH=~/.cache/decker/git
+PKGPATH=~/.cache/decker/pkg
 DBPATH=~/.local/share/decker/db
 PACDBPATH=/var/lib/pacman/local
+PACCACHEPATH=/var/cache/pacman/pkg
+YAYCACHEPATH=~/.cache/yay
 
 function init () {
-  echo "You will need to configure your password:"
-  passwd
+  sudo touch /dev/null
+  if [ $? != 0 ]
+  then
+    echo "You will need to configure your password:"
+    passwd
+  fi
   echo "Now readonly will be disabled:"
   sudo steamos-readonly disable
   echo "Populating the package keys"
@@ -22,6 +29,7 @@ function init () {
 function setup () {
   mkdir -p $GITPATH
   mkdir -p $DBPATH
+  mkdir -p $PKGPATH
   touch $PKGLIST
 }
 
@@ -29,7 +37,7 @@ function register_package () {
   PKG=$1
   PKGVER=$(pacman -Q $1 | awk -F " " '{ print $2}')
   cp -r $PACDBPATH/$PKG-$PKGVER/ $DBPATH
-  cat $PKGLIST | grep $PKG,
+  cat $PKGLIST | grep $PKG, > /dev/null
   if [ $? == 0 ]
   then
     LINE=$(cat $PKGLIST | grep -n $PKG, | cut -d : -f 1)
@@ -38,14 +46,29 @@ function register_package () {
   else
     echo "$PKG,$PKGVER" >> $PKGLIST
   fi
+  cache_package $PKG
+}
+
+function get_package_info () {
+  PKG=$1
+  PKGVER=$(cat $PKGLIST | grep $PKG, | awk -F "," '{ print $2}')
 }
 
 function unregister_package () {
-  PKG=$1
-  PKGVER=$(cat $PKGLIST | grep $PKG, | awk -F "," '{ print $2}')
+  get_package_info $1
   rm -f $DBPATH/$PKG-$PKGVER
   LINE=$PKG,$PKGVER
   sed -i /$LINE/d $PKGLIST
+}
+
+function cache_package () {
+  get_package_info $1
+  PKGFILE=$PACCACHEPATH/$(ls $PACCACHEPATH | grep $PKG-$PKGVER | grep -v .sig)
+  if [ $? != 0 ]
+  then
+    PKGFILE=$YAYCACHEPATH/$(ls $YAYCACHEPATH/$PKG | grep $PKG-$PKGVER | grep -v .tar.gz)
+  fi
+  sudo cp $PKGFILE $PKGPATH
 }
 
 function aur_setup () {
@@ -57,11 +80,12 @@ function aur_setup () {
   PKG=$(ls | grep pkg.tar.zst)
   sudo pacman -U $PKG
   register_package "yay"
+  register_package "git"
+  register_package "base-devel"
 }
 
 function restore_package () {
-  PKG=$1
-  PKGVER=$(cat $PKGLIST | grep $PKG, | awk -F "," '{ print $2}')
+  get_package_info $1
   sudo cp -r $DBPATH/$PKG-$PKGVER $PACDBPATH/
 }
 
@@ -100,8 +124,8 @@ then
 elif [[ $1 == "restore" ]]
 then
   init
-  aur_setup
   restore_all_packages
+  aur_setup
 elif [[ $1 == "install" ]]
 then
   install_package $2
