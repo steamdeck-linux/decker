@@ -8,8 +8,8 @@ To install a program, run `./decker.sh install <program>`.
 To restore package information to the Pacman database after a system update, run `./decker restore`.
 
 ## Commands
-help -- Display this message
-init -- Setup your SteamDeck for Decker
-restore -- Restore installed packages to Pacman
-install <package> -- Install a program and register it to Decker
-remove <package> -- Remove a program, and remove it from Decker
+help -- Display this message  
+init -- Setup your SteamDeck for Decker  
+restore -- Restore installed packages to Pacman  
+install <package> -- Install a program and register it to Decker  
+remove <package> -- Remove a program, and remove it from Decker  
