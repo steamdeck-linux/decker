@@ -19,7 +19,7 @@ function init () {
     echo "You will need to configure your password:"
     passwd
   fi
-  echo "Now readonly will be disabled:"
+  echo "Now readonly will be disabled"
   sudo steamos-readonly disable
   echo "Populating the package keys"
   sudo pacman-key --init
@@ -63,7 +63,11 @@ function unregister_package () {
 
 function cache_package () {
   get_package_info $1
-  PKGFILE=$PACCACHEPATH/$(ls $PACCACHEPATH | grep $PKG-$PKGVER | grep -v .sig)
+  PKGFILE=$(ls | grep $PKG-$PKGVER)
+  if [ $? != 0 ]
+  then
+    PKGFILE=$PACCACHEPATH/$(ls $PACCACHEPATH | grep $PKG-$PKGVER | grep -v .sig)
+  fi
   if [ $? != 0 ]
   then
     PKGFILE=$YAYCACHEPATH/$(ls $YAYCACHEPATH/$PKG | grep $PKG-$PKGVER | grep -v .tar.gz)
@@ -71,22 +75,27 @@ function cache_package () {
   sudo cp $PKGFILE $PKGPATH
 }
 
-function aur_setup () {
+function base_utils_setup () {
   sudo pacman -S git base-devel
+  register_package "git"
+  register_base_utils
+}
+
+function aur_setup () {
   cd $GITPATH
-  git clone https://aur.archlinux.org/yay.git
-  cd yay
+  git clone https://aur.archlinux.org/yay-bin.git
+  cd yay-bin
   makepkg
   PKG=$(ls | grep pkg.tar.zst)
   sudo pacman -U $PKG
-  register_package "yay"
-  register_package "git"
-  register_package "base-devel"
+  register_package "yay-bin"
 }
 
 function restore_package () {
   get_package_info $1
   sudo cp -r $DBPATH/$PKG-$PKGVER $PACDBPATH/
+  PKGFILE=$(ls $PKGPATH | grep $PKG-$PKGVER)
+  sudo pacman -U $PKGPATH/$PKGFILE --noconfirm
 }
 
 function restore_all_packages () {
@@ -106,13 +115,44 @@ function install_package () {
   fi
 }
 
+function check_registered_package () {
+  cat $PKGLIST | grep $PKG, > /dev/null
+  return $?
+}
+
 function remove_package () {
   PKG=$1
-  yay -R $PKG
+  yay -Rs $PKG
   if [ $? == 0 ]
   then
     unregister_package $PKG
   fi
+}
+
+function register_base_utils () {
+  register_package "grep"
+  register_package "findutils"
+  register_package "git"
+  register_package "gawk"
+  register_package "m4"
+  register_package "autoconf"
+  register_package "automake"
+  register_package "binutils"
+  register_package "gettext"
+  register_package "bison"
+  register_package "sed"
+  register_package "file"
+  register_package "fakeroot"
+  register_package "flex"
+  register_package "gcc"
+  register_package "groff"
+  register_package "gzip"
+  register_package "libtool"
+  register_package "texinfo"
+  register_package "make"
+  register_package "patch"
+  register_package "pkgconf"
+  register_package "which"
 }
 
 if [[ $1 == "init" ]]
@@ -120,18 +160,24 @@ then
   echo "This command should only need to be run once."
   setup
   init
+  base_utils_setup
   aur_setup
 elif [[ $1 == "restore" ]]
 then
   init
   restore_all_packages
-  aur_setup
 elif [[ $1 == "install" ]]
 then
   install_package $2
 elif [[ $1 == "remove" ]]
 then
-  remove_package $2
+  check_registered_package $2
+  if [ $? == 0 ]
+  then
+    remove_package $2
+  else
+    echo "$2 Does not seem to be registered in Decker."
+  fi
 else
   printf "Decker, Steam Deck Package Helper Script by Moxvallix\nhelp -- Display this message\ninit -- Setup your SteamDeck for Decker\nrestore -- Restore installed packages to Pacman\ninstall <package> -- Install a program and register it to Decker\nremove <package> -- Remove a program, and remove it from Decker\n"
 fi
