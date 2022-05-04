@@ -120,6 +120,22 @@ function check_registered_package () {
   return $?
 }
 
+function update_package () {
+  get_package_info $1
+  OLDVER=$PKGVER
+  install_package $PKG
+  OLDPKGFILE=$(ls $PKGPATH | grep $PKG-$PKGVER)
+  sudo rm $PKGPATH/$OLDPKGFILE
+}
+
+update_all_packages () {
+  cat $PKGLIST | while read LINE
+  do
+    PKG=$(echo $LINE | awk -F "," '{ print $1}')
+    update_package $PKG
+  done
+}
+
 function remove_package () {
   PKG=$1
   yay -Rs $PKG
@@ -168,9 +184,11 @@ then
   restore_all_packages
 elif [[ $1 == "install" ]]
 then
+  setup
   install_package $2
 elif [[ $1 == "remove" ]]
 then
+  setup
   check_registered_package $2
   if [ $? == 0 ]
   then
@@ -178,6 +196,10 @@ then
   else
     echo "$2 Does not seem to be registered in Decker."
   fi
+elif [[ $1 == "update" ]]
+then
+  setup
+  update_all_packages
 else
-  printf "Decker, Steam Deck Package Helper Script by Moxvallix\nhelp -- Display this message\ninit -- Setup your SteamDeck for Decker\nrestore -- Restore installed packages to Pacman\ninstall <package> -- Install a program and register it to Decker\nremove <package> -- Remove a program, and remove it from Decker\n"
+  printf "Decker, Steam Deck Package Helper Script by Moxvallix\nhelp -- Display this message\ninit -- Setup your SteamDeck for Decker\nrestore -- Restore installed packages to Pacman\ninstall <package> -- Install a program and register it to Decker\nremove <package> -- Remove a program, and remove it from Decker\nupdate -- Updates packages installed with Decker"
 fi
