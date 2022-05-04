@@ -70,7 +70,7 @@ function cache_package () {
   fi
   if [ $? != 0 ]
   then
-    PKGFILE=$YAYCACHEPATH/$(ls $YAYCACHEPATH/$PKG | grep $PKG-$PKGVER | grep -v .tar.gz)
+    PKGFILE=$YAYCACHEPATH/$PKG/$(ls $YAYCACHEPATH/$PKG | grep $PKG-$PKGVER | grep -v .tar.gz)
   fi
   sudo cp $PKGFILE $PKGPATH
 }
