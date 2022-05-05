@@ -13,3 +13,5 @@ init -- Setup your SteamDeck for Decker
 restore -- Restore installed packages to Pacman  
 install <package> -- Install a program and register it to Decker  
 remove <package> -- Remove a program, and remove it from Decker  
+update -- Updates packages installed with Decker  
+patch <file> -- Register a file to be restorable. Good for config files  

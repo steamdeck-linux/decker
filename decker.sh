@@ -4,13 +4,14 @@
 # This program is licensed under the GNU GPL v3
 # The full license can be viewed at: https://www.gnu.org/licenses/gpl-3.0.html
 
-PKGLIST=~/.local/share/decker/packages.csv
-GITPATH=~/.cache/decker/git
-PKGPATH=~/.cache/decker/pkg
-DBPATH=~/.local/share/decker/db
+PKGLIST="$HOME.local/share/decker/packages.csv"
+GITPATH="$HOME.cache/decker/git"
+PKGPATH="$HOME.cache/decker/pkg"
+DBPATH="$HOME.local/share/decker/db"
 PACDBPATH=/var/lib/pacman/local
+PATCHPATH="$HOME.local/share/decker/patch"
 PACCACHEPATH=/var/cache/pacman/pkg
-YAYCACHEPATH=~/.cache/yay
+YAYCACHEPATH="$HOME.cache/yay"
 
 function init () {
   sudo touch /dev/null
@@ -30,6 +31,7 @@ function setup () {
   mkdir -p $GITPATH
   mkdir -p $DBPATH
   mkdir -p $PKGPATH
+  mkdir -p $PATCHPATH
   touch $PKGLIST
 }
 
@@ -59,6 +61,29 @@ function unregister_package () {
   rm -f $DBPATH/$PKG-$PKGVER
   LINE=$PKG,$PKGVER
   sed -i /$LINE/d $PKGLIST
+}
+
+function register_patch () {
+  FILEPATH=$(readlink -f "$1")
+  FILE=$(basename $FILEPATH)
+  PATCH=$PATCHPATH/$(date +"%Y-%m-%d-%H%M%S")-$FILE.patch
+  EXISTINGPATCH=$(grep -r $FILEPATH $PATCHPATH | awk -F ":" '{ print $1 }')
+  if [ $? == 0 ]
+  then
+    if [[ $(date -r $FILEPATH) > $(date -r $EXISTINGPATCH) ]]
+    then
+      rm $EXISTINGPATCH
+      echo $FILEPATH > $PATCH
+      echo "---" >> $PATCH
+      cat $FILEPATH >> $PATCH
+    else
+      echo "Registered patch newer than \"$FILE\". If this is a mistake, delete the file at: \"$EXISTINGPATCH\""
+    fi
+  else
+    echo $FILEPATH > $PATCH
+    echo "---" >> $PATCH
+    cat $FILEPATH >> $PATCH
+  fi
 }
 
 function cache_package () {
@@ -98,11 +123,24 @@ function restore_package () {
   sudo pacman -U $PKGPATH/$PKGFILE --noconfirm
 }
 
+function restore_patch () {
+  PATCH=$1
+  PATCHPATH=$(head -n 1 $PATCH)
+  sudo tail -n +3 $PATCH > $PATCHPATH
+}
+
 function restore_all_packages () {
   cat $PKGLIST | while read LINE
   do
     PKG=$(echo $LINE | awk -F "," '{ print $1}')
     restore_package $PKG
+  done
+}
+
+function restore_all_patches () {
+  for PATCH in $PATCHPATH/*.patch
+  do
+    restore_patch $(readlink -f $PATCH)
   done
 }
 
@@ -128,7 +166,7 @@ function update_package () {
   sudo rm $PKGPATH/$OLDPKGFILE
 }
 
-update_all_packages () {
+function update_all_packages () {
   cat $PKGLIST | while read LINE
   do
     PKG=$(echo $LINE | awk -F "," '{ print $1}')
@@ -182,6 +220,7 @@ elif [[ $1 == "restore" ]]
 then
   init
   restore_all_packages
+  restore_all_patches
 elif [[ $1 == "install" ]]
 then
   setup
@@ -200,6 +239,9 @@ elif [[ $1 == "update" ]]
 then
   setup
   update_all_packages
+elif [[ $1 == "patch" ]]
+then
+  register_patch $2
 else
-  printf "Decker, Steam Deck Package Helper Script by Moxvallix\nhelp -- Display this message\ninit -- Setup your SteamDeck for Decker\nrestore -- Restore installed packages to Pacman\ninstall <package> -- Install a program and register it to Decker\nremove <package> -- Remove a program, and remove it from Decker\nupdate -- Updates packages installed with Decker"
+  printf "Decker, Steam Deck Package Helper Script by Moxvallix\nhelp -- Display this message\ninit -- Setup your SteamDeck for Decker\nrestore -- Restore installed packages and patches\ninstall <package> -- Install a program and register it to Decker\nremove <package> -- Remove a program, and remove it from Decker\nupdate -- Updates packages installed with Decker\npatch <file> -- Register a file to be restorable. Good for config files\n"
 fi
