@@ -2,6 +2,7 @@ require_relative "decker.rb"
 
 dep 'install', :package_name do
   requires [
+    'initialise',
     'package installed'.with(package_name),
     'package registered'.with(package_name)
   ]
