@@ -1,4 +1,4 @@
-require_relative "decker.rb"
+require_relative "../lib/decker"
 
 dep "initialise" do
   requires [
@@ -14,9 +14,9 @@ dep "package list" do
   met? {
     shell?("cat #{PKGLIST}")
   }
-  meet {s
+  meet {
     shell("mkdir -p #{LOCALPATH}")
-    shell("touch #{PKGLIST}")
+    shell("echo {} > #{PKGLIST}")
   }
 end
 

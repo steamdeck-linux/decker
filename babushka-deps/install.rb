@@ -1,4 +1,4 @@
-require_relative "decker.rb"
+require_relative "../lib/package"
 
 dep 'install', :package_name do
   requires [
@@ -8,45 +8,59 @@ dep 'install', :package_name do
   ]
 end
 
-dep 'package installed', :package_name do
+dep 'install dependency', :package_name do
+  package = Decker::Package.new(package_name.to_s)
   met? {
-    shell?("pacman -Qk #{package_name}")
+    package.registered?
   }
   meet {
-    log("Installing package: #{package_name}") 
-    shell("echo '1\n' | yay -S #{package_name} --answerclean None --answerdiff None --answeredit None --removemake --norebuild", spinner: true)
+    shell("babushka.rb 'current dir:install' package_name='#{package_name}'")
+  }
+end
+
+dep 'package installed', :package_name do
+  package = Decker::Package.new(package_name.to_s)
+  requires [
+    "package check".with(package_name),
+    "package dependencies listed".with(package_name)
+    ]
+  met? {
+    package.installed?
+  }
+  meet {
+    log("Installing package: #{package_name}")
+    package.install
+  }
+end
+
+dep 'package check', :package_name do
+  met? {
+    shell?("paru --getpkgbuild --print #{package_name}")
+    }
+  meet {
+    unmeetable! "Invalid or group package specified. Group and virtual packages are not supported by Decker!"
+    }
+end
+
+dep "package dependencies listed", :package_name do
+  package = Decker::Package.new(package_name.to_s)
+  met? {
+    package.info.has_key?("dependencies")
+  }
+  meet {
+    package.cached
   }
 end
 
 dep 'package registered', :package_name do
-  package_version = Decker.package_version(package_name)
+  log("Caching #{package_name}")
+  package = Decker::Package.new(package_name.to_s)
+  package_version = package.version
   requires [
-    'package in list up to date'.with(package_name, package_version),
     'package in db'.with(package_name, package_version),
-    'package cached'.with(package_name, package_version)
+    'package cached'.with(package_name, package_version),
+    'children registered'.with(package_name)
   ]
-end
-
-dep 'package in list up to date', :package_name, :package_version do
-  requires [
-    'package in packagelist'.with(package_name, package_version)
-  ]
-  met? {
-    shell?("cat ~/.local/share/decker/packages.csv | grep #{package_name},#{package_version}")
-  }
-  meet {
-    line = shell("cat #{PKGLIST} | grep -n #{package_name}, | cut -d : -f 1")
-    shell("sed -i '#{line}s/.*/#{package_name},#{package_version}/' #{PKGLIST}")
-  }
-end
-
-dep 'package in packagelist', :package_name, :package_version do
-  met? {
-    shell?("cat ~/.local/share/decker/packages.csv | grep #{package_name},")
-  }
-  meet {
-    shell("echo '#{package_name},#{package_version}' >> #{PKGLIST}")
-  }
 end
 
 dep 'package in db', :package_name, :package_version do
@@ -59,11 +73,31 @@ dep 'package in db', :package_name, :package_version do
 end
 
 dep 'package cached', :package_name, :package_version do
+  package = Decker::Package.new(package_name.to_s)
   met? {
     shell?("ls #{PKGPATH} | grep #{package_name}-#{package_version}")
   }
   meet {
-    package = Decker.get_package_file(package_name)
-    sudo("cp -r #{package} #{PKGPATH}")
+    package_file = package.package_file
+    if !package_file
+      package.install
+      shell("sleep 1")
+      package_file = package.package_file
+    end
+    sudo("cp -r #{package_file} #{PKGPATH}")
   }
+end
+
+dep 'children registered', :package_name do
+  package = Decker::Package.new(package_name.to_s)
+  required_deps = []
+  package.cached.each do |dependency|
+    return required_deps = ['package has no children'] if package.cached.empty?
+    required_deps.append('install dependency'.with(dependency))
+  end
+  requires required_deps
+end
+
+dep 'package has no children' do
+  met? { true }
 end
