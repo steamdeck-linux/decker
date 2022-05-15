@@ -7,15 +7,20 @@ GITPATH = File.expand_path("~/.cache/decker/git")
 PKGPATH = File.expand_path("~/.cache/decker/pkg")
 DBPATH = File.expand_path("~/.local/share/decker/db")
 PATCHPATH = File.expand_path("~/.local/share/decker/patch")
+PATCHLIST = File.expand_path("~/.local/share/decker/patchlist.json")
 PACDBPATH = File.expand_path("/var/lib/pacman/local")
 PACCACHEPATH = File.expand_path("/var/cache/pacman/pkg")
 PARUCACHEPATH = File.expand_path("~/.cache/paru/clone")
 
 module Decker
   class Main
-    
+
     def self.package_list
       JSON.parse(File.read(PKGLIST))
+    end
+
+    def self.patch_list
+      JSON.parse(File.read(PATCHLIST))
     end
 
     def valid_package?(package_name)
@@ -39,11 +44,18 @@ module Decker
     end
 
     def write_to_pkglist(package_name, package_info)
-      data = { package_name => package_info }
-      packages = Main.package_list
-      packages.merge!(data)
-      packages_json = JSON.pretty_generate(packages)
-      File.write(PKGLIST, packages_json)
+      write_to_file(PKGLIST, Main.package_list, package_name, package_info)
+    end
+
+    def write_to_patchlist(patch_name, patch_info)
+      write_to_file(PATCHLIST, Main.patch_list, patch_name, patch_info)
+    end
+
+    def write_to_file(file, list, key, info)
+      data = { key => info }
+      list.merge!(data)
+      json = JSON.pretty_generate(list)
+      File.write(file, json)
     end
 
   end

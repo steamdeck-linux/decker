@@ -1,10 +1,12 @@
 require_relative "../lib/package"
+require_relative "../lib/patch"
 
 dep 'restore' do
   requires [
     'initialise',
     'package db restored',
-    'packages installed from cache'
+    'packages installed from cache',
+    'patches restored'
   ]
 end
 
@@ -46,4 +48,19 @@ dep 'package install from cache', :package_name do
   meet {
     package.install_from_cache
   }
+end
+
+dep 'patches restored' do
+  patches = Decker::Patch.all
+  required_deps = []
+  patches.each do |patch|
+    required_deps.append('restore patch'.with(patch))
+  end
+  requires required_deps
+end
+
+dep 'restore patch', :filepath do
+  patch = Decker::Patch.new(filepath.to_s)
+  log("Restoring patch #{filepath}")
+  patch.restore
 end

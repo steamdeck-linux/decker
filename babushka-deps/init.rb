@@ -3,6 +3,7 @@ require_relative "../lib/decker"
 dep "initialise" do
   requires [
     "package list",
+    "patch list",
     "package db",
     "patch db",
     "git cache",
@@ -17,6 +18,16 @@ dep "package list" do
   meet {
     shell("mkdir -p #{LOCALPATH}")
     shell("echo {} > #{PKGLIST}")
+  }
+end
+
+dep "patch list" do
+  met? {
+    shell?("cat #{PATCHLIST}")
+  }
+  meet {
+    shell("mkdir -p #{LOCALPATH}")
+    shell("echo {} > #{PATCHLIST}")
   }
 end
 
