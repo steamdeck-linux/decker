@@ -10,6 +10,7 @@ end
 
 dep 'install dependency', :package_name do
   package = Decker::Package.new(package_name.to_s)
+  log("Installing dependency #{package_name}")
   met? {
     package.registered?
   }

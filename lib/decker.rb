@@ -13,8 +13,8 @@ PARUCACHEPATH = File.expand_path("~/.cache/paru/clone")
 
 module Decker
   class Main
-
-    def package_list
+    
+    def self.package_list
       JSON.parse(File.read(PKGLIST))
     end
 
@@ -31,9 +31,16 @@ module Decker
       %x(paru --getpkgbuild --print #{package_name})
     end
 
+    def remove_from_pkglist(package_name)
+      packages = Main.package_list
+      packages.delete(package_name)
+      packages_json = JSON.pretty_generate(packages)
+      File.write(PKGLIST, packages_json)
+    end
+
     def write_to_pkglist(package_name, package_info)
       data = { package_name => package_info }
-      packages = package_list
+      packages = Main.package_list
       packages.merge!(data)
       packages_json = JSON.pretty_generate(packages)
       File.write(PKGLIST, packages_json)

@@ -4,6 +4,14 @@ include Decker
 module Decker
   class Package < Main
 
+    def self.all
+      Main.package_list.keys
+    end
+
+    def package_list
+      Main.package_list
+    end
+
     def initialize(package_name)
       raise "Invalid Package" unless valid_package?(package_name)
       @name = package_name
@@ -11,6 +19,10 @@ module Decker
 
     def installed?(package = @name)
       system("paru -Qk #{package} &> /dev/null")
+    end
+
+    def in_pacman_db?
+      File.exist?("#{PACDBPATH}/#{@name}-#{version}")
     end
 
     def registered?
@@ -26,8 +38,8 @@ module Decker
     end
 
     def version
-      raise "Package not installed" unless installed?
       return info["version"] if info.has_key?("version")
+      raise "Package not installed" unless installed?
       version = %x(paru -Q #{@name}).split(" ").last
       if write_package_info("version", version)
         return version
@@ -53,20 +65,62 @@ module Decker
       raise "Cached dependencies could not be written"
     end
 
+    def required_by
+      package_list = Package.all
+      packages = package_list.reject { |package| package == @name }
+      package_required_by = []
+      packages.each do |package_name|
+        package = Package.new(package_name)
+        package_required_by.append(package_name) if package.dependencies.include?(@name)
+      end
+      package_required_by
+    end
+
+    def unique_dependencies
+      unique = []
+      check_dependencies = cached.append(@name)
+      cached.each do |cached_dependency|
+        package = Package.new(cached_dependency)
+        packages_require = package.required_by - check_dependencies
+        unique.append(cached_dependency) if packages_require.empty?
+      end
+      unique
+    end
+
     def install
       system("paru -S #{@name} --skipreview --norebuild --removemake")
     end
 
+    def install_from_cache
+      system("paru -U #{package_file}")
+    end
+
+    def uninstall
+      deregister
+      system("paru -Rs #{@name}")
+    end
+
+    def deregister
+      remove_from_pkglist(@name)
+    end
+
     def package_file
-      raise "Package not installed" unless version
+      cache = find_package_in_path(PKGPATH)
       pacman = find_package_in_path(PACCACHEPATH)
       aur = find_package_in_path("#{PARUCACHEPATH}/#{@name}")
       local = find_package_in_path(".")
 
+      return cache if cache
       return pacman if pacman
       return aur if aur
       return local if local
-      false
+      raise "Package file missing"
+    end
+
+    def db_file
+      db_path = "#{DBPATH}/#{@name}-#{version}"
+      raise "DB File missing!" unless File.exist?("#{DBPATH}/#{@name}-#{version}")
+      db_path
     end
 
     private
@@ -74,7 +128,7 @@ module Decker
     def get_dependencies
       pkgbuild = get_pkgbuild(@name)
       dependencies = pkgbuild.match(/^(depends=)\([\s\S][^\)]*\)/).to_s
-      cleanup_dependencies(dependencies)
+      cleanup_dependencies(dependencies).uniq
     end
 
     def cleanup_dependencies(dependencies)
