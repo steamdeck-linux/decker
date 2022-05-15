@@ -39,6 +39,10 @@ module Decker
 
     def version
       return info["version"] if info.has_key?("version")
+      update_version
+    end
+
+    def update_version
       raise "Package not installed" unless installed?
       version = %x(paru -Q #{@name}).split(" ").last
       if write_package_info("version", version)
