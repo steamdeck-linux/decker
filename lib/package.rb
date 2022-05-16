@@ -142,7 +142,7 @@ module Decker
       dependency_array = dependencies.split(" ")
       special = "?<>',?[]}{=)(*&^%$#`~{}"
       regex = /[#{special.gsub(/./){|char| "\\#{char}"}}]/
-      dependency_array.delete_if {|dependency| dependency ~= regex}
+      dependency_array.delete_if {|dependency| dependency =~ regex}
       dependency_array.select {|dependency| !dependency.end_with?(".so") }
     end
 
