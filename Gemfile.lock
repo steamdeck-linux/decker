@@ -4,10 +4,10 @@ GEM
     thor (1.2.1)
 
 PLATFORMS
-  x86_64-linux
+  ruby
 
 DEPENDENCIES
   thor
 
 BUNDLED WITH
-   2.3.11
+   1.17.3
