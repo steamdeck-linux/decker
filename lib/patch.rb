@@ -8,7 +8,7 @@ module Decker
 
     def initialize(filepath)
       @filepath = File.expand_path(filepath)
-      raise "Invalid file" unless File.file?(@filepath) || Main.patch_list.has_key?(@filepath)
+      raise "Invalid file '#{filepath}'" unless File.file?(@filepath) || Main.patch_list.has_key?(@filepath)
       @id = Time.now.strftime("%Y%M%d%H%M%S")
       @time = Time.now.round.to_s
     end
@@ -26,7 +26,7 @@ module Decker
       if write_to_patchlist(@filepath, {})
         return {}
       end
-      raise "Patch info could not be written"
+      raise "Patch info could not be written to file."
     end
 
     def all
@@ -76,7 +76,7 @@ module Decker
     end
 
     def save
-      raise "Invalid file" unless File.file?(@filepath)
+      raise "Invalid file '@filepath'!" unless File.file?(@filepath)
       stat = File.stat(@filepath)
       uid = stat.uid
       gid = stat.gid

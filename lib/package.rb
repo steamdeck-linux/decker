@@ -13,7 +13,7 @@ module Decker
     end
 
     def initialize(package_name)
-      raise "Invalid Package" unless valid_package?(package_name)
+      raise "Package '#{package_name}' is invalid!" unless valid_package?(package_name)
       @name = package_name
     end
 
@@ -34,7 +34,7 @@ module Decker
       if write_to_pkglist(@name, {})
         return {}
       end
-      raise "Package info could not be written"
+      raise "Package info could not be written to file."
     end
 
     def version
@@ -43,12 +43,12 @@ module Decker
     end
 
     def update_version
-      raise "Package not installed" unless installed?
+      raise "Package '#{@name}' not installed" unless installed?
       version = %x(paru -Q #{@name}).split(" ").last
       if write_package_info("version", version)
         return version
       end
-      raise "Version could not be written"
+      raise "Version '#{version}' for package '#{@name}' could not be written to file."
     end
 
     def dependencies
@@ -66,7 +66,7 @@ module Decker
       if write_package_info("cached", cached)
         return cached
       end
-      raise "Cached dependencies could not be written"
+      raise "Cached dependencies '#{cached}' could not be written to file."
     end
 
     def required_by
@@ -118,7 +118,7 @@ module Decker
       return pacman if pacman
       return aur if aur
       return local if local
-      raise "Package file missing"
+      raise "Package file for package '#{@name}' is missing!"
     end
 
     def db_file
@@ -140,6 +140,9 @@ module Decker
       dependencies.gsub!("depends=", "")
       dependencies.gsub!(/((>=)|(<=)|(>)|(<)|(=))\S*/, "")
       dependency_array = dependencies.split(" ")
+      special = "?<>',?[]}{=)(*&^%$#`~{}"
+      regex = /[#{special.gsub(/./){|char| "\\#{char}"}}]/
+      dependency_array.delete_if {|dependency| dependency ~= regex}
       dependency_array.select {|dependency| !dependency.end_with?(".so") }
     end
 
