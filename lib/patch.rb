@@ -80,7 +80,8 @@ module Decker
       stat = File.stat(@filepath)
       uid = stat.uid
       gid = stat.gid
-      mode = stat.mode.to_s(8).slice!(2..)
+      mode = stat.mode.to_s(8)
+      mode.slice!(0..1)
       create_patch
       data = {
         patch: patchfile,

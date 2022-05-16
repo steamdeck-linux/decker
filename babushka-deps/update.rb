@@ -15,7 +15,7 @@ dep 'update packages in list' do
   packages = Decker::Package.all
   depends_array = []
   packages.each do |package|
-    depends_array.append('update package'.with(package))
+    depends_array.push('update package'.with(package))
   end
   requires depends_array
 end

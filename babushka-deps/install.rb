@@ -94,7 +94,7 @@ dep 'children registered', :package_name do
   required_deps = []
   package.cached.each do |dependency|
     return required_deps = ['package has no children'] if package.cached.empty?
-    required_deps.append('install dependency'.with(dependency))
+    required_deps.push('install dependency'.with(dependency))
   end
   requires required_deps
 end

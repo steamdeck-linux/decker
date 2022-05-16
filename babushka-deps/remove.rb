@@ -11,7 +11,7 @@ dep 'deregister dependencies', :package_name do
   package = Decker::Package.new(package_name.to_s)
   required_deps = []
   package.unique_dependencies.each do |dependency|
-    required_deps.append('deregister dependency'.with(dependency))
+    required_deps.push('deregister dependency'.with(dependency))
   end
   requires required_deps
 end

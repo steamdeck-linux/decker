@@ -75,18 +75,18 @@ module Decker
       package_required_by = []
       packages.each do |package_name|
         package = Package.new(package_name)
-        package_required_by.append(package_name) if package.dependencies.include?(@name)
+        package_required_by.push(package_name) if package.dependencies.include?(@name)
       end
       package_required_by
     end
 
     def unique_dependencies
       unique = []
-      check_dependencies = cached.append(@name)
+      check_dependencies = cached.push(@name)
       cached.each do |cached_dependency|
         package = Package.new(cached_dependency)
         packages_require = package.required_by - check_dependencies
-        unique.append(cached_dependency) if packages_require.empty?
+        unique.push(cached_dependency) if packages_require.empty?
       end
       unique
     end

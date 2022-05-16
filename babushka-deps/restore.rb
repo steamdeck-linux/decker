@@ -14,7 +14,7 @@ dep 'package db restored' do
   packages = Decker::Package.all
   depends_array = []
   packages.each do |package|
-    depends_array.append('package restore db'.with(package))
+    depends_array.push('package restore db'.with(package))
   end
   requires depends_array
 end
@@ -34,7 +34,7 @@ dep 'packages installed from cache' do
   packages = Decker::Package.all
   depends_array = []
   packages.each do |package|
-    depends_array.append('package install from cache'.with(package))
+    depends_array.push('package install from cache'.with(package))
   end
   requires depends_array
 end
@@ -54,7 +54,7 @@ dep 'patches restored' do
   patches = Decker::Patch.all
   required_deps = []
   patches.each do |patch|
-    required_deps.append('restore patch'.with(patch))
+    required_deps.push('restore patch'.with(patch))
   end
   requires required_deps
 end
