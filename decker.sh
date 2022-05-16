@@ -3,6 +3,8 @@
 # Decker, (c) Moxvallix 2022
 # This program is licensed under the GNU GPL v3
 # The full license can be viewed at: https://www.gnu.org/licenses/gpl-3.0.html
+# This is the legacy bash script, initially used for testing Decker's basic concepts
+# Please use the Ruby based AppImage instead, as this script is far from stable.
 
 PKGLIST="$HOME.local/share/decker/packages.csv"
 GITPATH="$HOME.cache/decker/git"
