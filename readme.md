@@ -1,5 +1,12 @@
 # Decker
 ## A Package Restore Helper for the Steam Deck
+Decker is an upcoming "Package Manager" (wrapper around [Paru](https://github.com/morganamilo/paru)), that aims to restore user installed packages to the system, after a system upgrade.
+
+Decker will be distributed as an AppImage, allowing it to run easily, without installing any packages.
+
+Decker will save package files downloaded to the cache, as well as pacman database entries, to it's own folders in the home directory (~/.local/share/decker and ~/.cache/decker), as well it will also save any dependencies of an installed package that are not already installed on the device. Decker, when the restore command is run, then restores first the database entries of the packages, then installs them once more, from the cached package file.
+
+## Decker Early Testing Bash Script
 ### !!This program has had little testing. Use only if you know what you are doing!!
 
 ## Usage:
