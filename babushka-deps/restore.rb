@@ -4,6 +4,7 @@ require_relative "../lib/patch"
 dep 'restore' do
   requires [
     'initialise',
+    'setup',
     'package db restored',
     'packages installed from cache',
     'patches restored'

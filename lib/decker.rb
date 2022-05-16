@@ -11,6 +11,7 @@ PATCHLIST = File.expand_path("~/.local/share/decker/patchlist.json")
 PACDBPATH = File.expand_path("/var/lib/pacman/local")
 PACCACHEPATH = File.expand_path("/var/cache/pacman/pkg")
 PARUCACHEPATH = File.expand_path("~/.cache/paru/clone")
+SETUPCHECK = File.expand_path("~/.cache/decker/setup")
 
 module Decker
   class Main

@@ -1,17 +1,18 @@
 require_relative "../lib/decker"
 
-dep "initialise" do
+dep 'initialise' do
   requires [
-    "package list",
-    "patch list",
-    "package db",
-    "patch db",
-    "git cache",
-    "package cache"
+    'initial setup',
+    'package list',
+    'patch list',
+    'package db',
+    'patch db',
+    'git cache',
+    'package cache'
   ]
 end
 
-dep "package list" do
+dep 'package list' do
   met? {
     shell?("cat #{PKGLIST}")
   }
@@ -21,7 +22,7 @@ dep "package list" do
   }
 end
 
-dep "patch list" do
+dep 'patch list' do
   met? {
     shell?("cat #{PATCHLIST}")
   }
@@ -31,7 +32,7 @@ dep "patch list" do
   }
 end
 
-dep "package db" do
+dep 'package db' do
   met? {
     Dir.exist?(File.expand_path(DBPATH))
   }
@@ -40,7 +41,7 @@ dep "package db" do
   }
 end
 
-dep "patch db" do
+dep 'patch db' do
   met? {
     Dir.exist?(File.expand_path(PATCHPATH))
   }
@@ -49,7 +50,7 @@ dep "patch db" do
   }
 end
 
-dep "git cache" do
+dep 'git cache' do
   met? {
     Dir.exist?(File.expand_path(GITPATH))
   }
@@ -58,7 +59,7 @@ dep "git cache" do
   }
 end
 
-dep "package cache" do
+dep 'package cache' do
   met? {
     Dir.exist?(File.expand_path(PKGPATH))
   }
