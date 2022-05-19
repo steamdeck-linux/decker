@@ -1,4 +1,6 @@
 require 'json'
+require "#{ENV["BABUSHKA_PATH"]}/lib/babushka"
+include Babushka::DSL
 
 LOCALPATH = File.expand_path("~/.local/share/decker")
 CACHEPATH = File.expand_path("~/.cache/decker")

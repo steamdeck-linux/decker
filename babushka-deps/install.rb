@@ -10,12 +10,13 @@ end
 
 dep 'install dependency', :package_name do
   package = Decker::Package.new(package_name.to_s)
-  log("Installing dependency #{package_name}")
   met? {
     package.registered?
   }
   meet {
-    shell("babushka.rb 'current dir:install' package_name='#{package_name}'")
+    log_block("Installing dependency #{package_name}") do
+      shell("babushka.rb 'current dir:install' package_name='#{package_name}'")
+    end
   }
 end
 
@@ -27,6 +28,7 @@ dep 'package installed', :package_name do
     ]
   met? {
     package.installed?
+    package.version
   }
   meet {
     log("Installing package: #{package_name}")
