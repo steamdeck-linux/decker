@@ -2,13 +2,13 @@ require_relative "../lib/decker"
 
 dep 'initialise' do
   requires [
-    'initial setup',
     'package list',
     'patch list',
     'package db',
     'patch db',
     'git cache',
-    'package cache'
+    'package cache',
+    'initial setup'
   ]
 end
 
