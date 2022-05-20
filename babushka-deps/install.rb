@@ -28,11 +28,11 @@ dep 'package installed', :package_name do
     ]
   met? {
     package.installed?
-    package.version
   }
   meet {
     log("Installing package: #{package_name}")
     package.install
+    package.version
   }
 end
 
