@@ -12,11 +12,11 @@ dep 'install dependency', :package_name do
   package = Decker::Package.new(package_name.to_s)
   met? {
     package.registered?
+    package.get_version
   }
   meet {
-    log_block("Installing dependency #{package_name}") do
-      shell("babushka.rb 'current dir:install' package_name='#{package_name}'")
-    end
+    log("Installing dependency #{package_name}")
+    system("babushka.rb 'current dir:install' package_name='#{package_name.to_s}'")
   }
 end
 
@@ -32,7 +32,7 @@ dep 'package installed', :package_name do
   meet {
     log("Installing package: #{package_name}")
     package.install
-    package.version
+    package.get_version
   }
 end
 
@@ -58,7 +58,7 @@ end
 dep 'package registered', :package_name do
   log("Caching #{package_name}")
   package = Decker::Package.new(package_name.to_s)
-  package_version = package.version
+  package_version = package.get_version
   requires [
     'package in db'.with(package_name, package_version),
     'package cached'.with(package_name, package_version),

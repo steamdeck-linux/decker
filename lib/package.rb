@@ -39,6 +39,11 @@ module Decker
 
     def version
       return info["version"] if info.has_key?("version")
+      false
+    end
+
+    def get_version
+      return info["version"] if info.has_key?("version")
       update_version
     end
 

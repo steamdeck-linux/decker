@@ -18,6 +18,11 @@ class DeckerCLI < Thor
     Dep('current dir:update').meet
   end
 
+  desc "search [PACKAGE]", "searches for packages matching PACKAGE"
+  def search(package)
+    system("paru -Ss #{package}")
+  end
+
   desc "patch [FILEPATH]", "registers file at FILEPATH to Decker, so it can be restored"
   def patch(filepath)
     Dep('current dir:patch').meet(filepath)
