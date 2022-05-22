@@ -18,7 +18,7 @@ module Decker
     end
 
     def installed?(package = @name)
-      system("paru -Qk #{package} &> /dev/null")
+      system("paru -Qi #{package} &> /dev/null")
     end
 
     def in_pacman_db?
