@@ -34,7 +34,7 @@ end
 
 dep 'mark setup complete' do
   met? {
-    shell("cat #{SETUPCHECK}")
+    File.file?(SETUPCHECK)
   }
   meet {
     shell("touch #{SETUPCHECK}")
