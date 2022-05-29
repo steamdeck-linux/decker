@@ -3,6 +3,12 @@ require_relative "../lib/package"
 dep 'install', :package_name do
   requires [
     'initialise',
+    'install package'.with(package_name)
+  ]
+end
+
+dep 'install package', :package_name do
+  requires [
     'package installed'.with(package_name),
     'package registered'.with(package_name)
   ]
@@ -48,7 +54,7 @@ end
 dep "package dependencies listed", :package_name do
   package = Decker::Package.new(package_name.to_s)
   met? {
-    package.info.has_key?("dependencies")
+    package.info.has_key?("dependencies") || package.dependencies == :blank
   }
   meet {
     package.cached
@@ -93,12 +99,16 @@ end
 
 dep 'children registered', :package_name do
   package = Decker::Package.new(package_name.to_s)
-  required_deps = []
-  package.cached.each do |dependency|
-    return required_deps = ['package has no children'] if package.cached.empty?
-    required_deps.push('install dependency'.with(dependency))
+  if package.dependencies == :blank
+    met? { true }
+  else
+    required_deps = []
+    package.cached.each do |dependency|
+      return required_deps = ['package has no children'] if package.cached.empty?
+      required_deps.push('install dependency'.with(dependency))
+    end
+    requires required_deps
   end
-  requires required_deps
 end
 
 dep 'package has no children' do

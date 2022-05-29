@@ -58,6 +58,7 @@ module Decker
 
     def dependencies
       return info["dependencies"] if info.has_key?("dependencies")
+      return :blank if get_dependencies == :blank
       if write_package_info("dependencies", get_dependencies)
         return dependencies
       end
@@ -66,6 +67,7 @@ module Decker
 
     def cached
       return info["cached"] if info.has_key?("cached")
+      return :blank if dependencies == :blank
       cached = dependencies.select {|dependency| !installed?(dependency)}
       return cached if cached.empty?
       if write_package_info("cached", cached)
@@ -101,7 +103,7 @@ module Decker
     end
 
     def install_from_cache
-      system("paru -U #{package_file}")
+      system("paru -U #{package_file} --noconfirm")
     end
 
     def uninstall
@@ -137,7 +139,8 @@ module Decker
     def get_dependencies
       pkgbuild = get_pkgbuild(@name)
       dependencies = pkgbuild.match(/^(depends=)\([\s\S][^\)]*\)/).to_s
-      cleanup_dependencies(dependencies).uniq
+      return cleanup_dependencies(dependencies).uniq unless dependencies.empty?
+      :blank
     end
 
     def cleanup_dependencies(dependencies)

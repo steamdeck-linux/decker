@@ -4,7 +4,7 @@ require_relative "../lib/patch"
 dep 'restore' do
   requires [
     'initialise',
-    'setup',
+    'setup device',
     'restore all packages',
     'restore all patches'
   ]
@@ -58,12 +58,7 @@ end
 dep 'package install from cache', :package_name do
   package = Decker::Package.new(package_name.to_s)
   log("Installing #{package_name}")
-  met? {
-    package.installed?
-  }
-  meet {
-    package.install_from_cache
-  }
+  package.install_from_cache
 end
 
 dep 'restore all patches' do
